@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:user_preferences/src/share_prefs/user_preferences.dart';
 import 'package:user_preferences/src/widgets/drawer_widget.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -9,30 +10,25 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   bool switchIndicator = false;
-  int gender = 1;
+  int gender;
   TextEditingController _textEditingController;
   String name = 'pepe';
+  final prefs = new UserPreferences();
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    loadPrefs();
+    prefs.lastPage = '/settings';
+    gender = prefs.gender;
+    switchIndicator = prefs.color;
     _textEditingController = new TextEditingController(text: name);
   }
 
-  loadPrefs() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    setState(() {
-      gender = prefs.getInt('gender');
-    });
-  }
 
   _selectedRadio(int value) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    await prefs.setInt('gender', value);
+    prefs.gender = value;
     setState(() {
       this.gender = value;
     });
@@ -44,6 +40,8 @@ class _SettingsPageState extends State<SettingsPage> {
         appBar: AppBar(
           title: Text('Settings'),
           centerTitle: true,
+          backgroundColor: (prefs.color) ? Colors.deepPurple : Colors.blue ,
+
         ),
         drawer: DrawerWidget(),
         body: ListView(
@@ -62,6 +60,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 onChanged: (value) {
                   setState(() {
                     this.switchIndicator = value;
+                    prefs.color = value;
                   });
                 }),
             RadioListTile(
@@ -83,7 +82,9 @@ class _SettingsPageState extends State<SettingsPage> {
                 controller: _textEditingController,
                 decoration:
                     InputDecoration(labelText: 'Name', helperText: 'Name'),
-                onChanged: (value) {},
+                onChanged: (value) {
+                  prefs.name(value);
+                },
               ),
             ),
           ],
